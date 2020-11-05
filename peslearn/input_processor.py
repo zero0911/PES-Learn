@@ -17,8 +17,9 @@ class InputProcessor(object):
     """
     def __init__(self, input_string):
         # Remove all comments denoted by '#'
-        self.full_string = re.sub('\s*#.+', '', input_string) 
-        if re.search(regex.intcoords_regex, self.full_string):
+        self.full_string = re.sub('\s*#.+', '', input_string)
+        regex_number = regex.intcoords_regex
+        if re.search(regex_number, self.full_string):
             self.zmat_string = re.findall(regex.intcoords_regex, self.full_string)[0] 
         self.intcos_ranges = None 
         self.keywords = self.get_keywords()

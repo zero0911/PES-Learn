@@ -15,7 +15,7 @@ class Template(object):
     """
 
     def __init__(self, template_path):
-        with open(template_path, 'r') as  f: 
+        with open(template_path, 'r') as f:
             template = f.read()
         self.template = template
         self.start, self.end = self.parse_xyz()
