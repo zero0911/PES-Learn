@@ -39,6 +39,7 @@ model = torch.load('model.pt')
 # The returned energy array is a column vector of corresponding energies. Elements can be accessed with E[0,0], E[0,1], E[0,2]
 # NOTE: Sending multiple geometries through at once is much faster than a loop of sending single geometries through.
 
+
 def pes(geom_vectors, cartesian=True):
     g = np.asarray(geom_vectors)
     if cartesian:
@@ -49,19 +50,26 @@ def pes(geom_vectors, cartesian=True):
     newX = nn.transform_new_X(g, params, Xscaler)
     x = torch.tensor(data=newX)
     with torch.no_grad():
-        E = model(x)
+        E = model(x.float())
     e = nn.inverse_transform_new_y(E, yscaler)
     #e = e - (insert min energy here)
     #e *= 219474.63  ( convert units )
     return e
 
+
 def cart1d_to_distances1d(vec):
     vec = vec.reshape(-1,3)
     n = len(vec)
     distance_matrix = np.zeros((n,n))
-    for i,j in combinations(range(len(vec)),2):
+    for i, j in combinations(range(len(vec)),2):
         R = np.linalg.norm(vec[i]-vec[j])
-        distance_matrix[j,i] = R
+        distance_matrix[j, i] = R
     distance_vector = distance_matrix[np.tril_indices(len(distance_matrix),-1)]
     return distance_vector
 
+
+if __name__ == "__main__":
+    print("Start the calculation of energy...")
+    # Based on the data in PES_data_new 17
+    input_value = [[0, 0, 1.1125], [0, 0.85, -0.12], [0, 0, 0]]
+    pes(geom_vectors=input_value, cartesian=False)
