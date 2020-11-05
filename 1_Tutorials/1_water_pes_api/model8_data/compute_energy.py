@@ -8,7 +8,7 @@ nn = NeuralNetwork('PES.dat', InputProcessor(''), molecule_type='A2B')
 params = {'layers': (128, 128, 128), 'morse_transform': {'morse': True, 'morse_alpha': 1.3}, 'pip': {'degree_reduction': False, 'pip': True}, 'scale_X': {'activation': 'tanh', 'scale_X': 'mm11'}, 'scale_y': 'std', 'lr': 0.5}
 
 X, y, Xscaler, yscaler =  nn.preprocess(params, nn.raw_X, nn.raw_y)
-model = torch.load('model.pt')
+
 
 # How to use 'compute_energy()' function
 # --------------------------------------
@@ -41,6 +41,7 @@ model = torch.load('model.pt')
 
 
 def pes(geom_vectors, cartesian=True):
+    model = torch.load('model.pt')
     g = np.asarray(geom_vectors)
     if cartesian:
         axis = 1
@@ -48,14 +49,16 @@ def pes(geom_vectors, cartesian=True):
             axis = 0
         g = np.apply_along_axis(cart1d_to_distances1d, axis, g)
     newX = nn.transform_new_X(g, params, Xscaler)
-    x = torch.tensor(data=newX)
+    x = torch.tensor(data=newX, requires_grad=True)
+    model.zero_grad()
     # x = torch.tensor(data=x)
-    with torch.no_grad():
-        E = model(x.float())
-    e = nn.inverse_transform_new_y(E, yscaler)
+    E = model(x.float())
+    v = torch.tensor([[1.0]], dtype=torch.float, requires_grad=True)
+    E.backward(v)
+    e = nn.inverse_transform_new_y(E.detach(), yscaler)
     # e = e - (insert min energy here)
     # e *= 219474.63  ( convert units )
-    return E
+    return e, x.grad
 
 
 def cart1d_to_distances1d(vec):
@@ -72,5 +75,6 @@ def cart1d_to_distances1d(vec):
 if __name__ == "__main__":
     print("Start the calculation of energy...")
     # Based on the data in PES_data_new 17
-    input_value = [0, 0, 1.1125, 0, 0.85, -0.12, 0, 0, 0]
-    pes(geom_vectors=input_value, cartesian=True)
+    input_value = (0, 0, 1.1125, 0, 0.85, -0.12, 0, 0, 0)
+    result, grad = pes(geom_vectors=input_value, cartesian=True)
+    print(grad)
