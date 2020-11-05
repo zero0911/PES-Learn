@@ -49,12 +49,13 @@ def pes(geom_vectors, cartesian=True):
         g = np.apply_along_axis(cart1d_to_distances1d, axis, g)
     newX = nn.transform_new_X(g, params, Xscaler)
     x = torch.tensor(data=newX)
+    # x = torch.tensor(data=x)
     with torch.no_grad():
         E = model(x.float())
     e = nn.inverse_transform_new_y(E, yscaler)
-    #e = e - (insert min energy here)
-    #e *= 219474.63  ( convert units )
-    return e
+    # e = e - (insert min energy here)
+    # e *= 219474.63  ( convert units )
+    return E
 
 
 def cart1d_to_distances1d(vec):
@@ -71,5 +72,5 @@ def cart1d_to_distances1d(vec):
 if __name__ == "__main__":
     print("Start the calculation of energy...")
     # Based on the data in PES_data_new 17
-    input_value = [[0, 0, 1.1125], [0, 0.85, -0.12], [0, 0, 0]]
-    pes(geom_vectors=input_value, cartesian=False)
+    input_value = [0, 0, 1.1125, 0, 0.85, -0.12, 0, 0, 0]
+    pes(geom_vectors=input_value, cartesian=True)
