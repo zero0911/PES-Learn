@@ -53,7 +53,7 @@ def pes(geom_vectors, cartesian=True):
     model.zero_grad()
     # x = torch.tensor(data=x)
     E = model(x.float())
-    v = torch.tensor([[1.0]], dtype=torch.float, requires_grad=True)
+    v = torch.tensor([[1.0]], dtype=torch.float)
     E.backward(v)
     e = nn.inverse_transform_new_y(E.detach(), yscaler)
     # e = e - (insert min energy here)
