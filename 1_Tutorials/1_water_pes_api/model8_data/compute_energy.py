@@ -72,6 +72,7 @@ def cart1d_to_distances1d(vec):
     return distance_vector
 
 
+# Changed to new branch luoshu_implementation
 if __name__ == "__main__":
     print("Start the calculation of energy...")
     # Based on the data in PES_data_new 17
