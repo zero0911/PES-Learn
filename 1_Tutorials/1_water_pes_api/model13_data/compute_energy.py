@@ -5,10 +5,10 @@ import numpy as np
 from itertools import combinations
 
 nn = NeuralNetwork('PES.dat', InputProcessor(''), molecule_type='A2B')
-params = {'layers': (128, 128, 128), 'morse_transform': {'morse': True, 'morse_alpha': 1.3}, 'pip': {'degree_reduction': False, 'pip': True}, 'scale_X': {'activation': 'tanh', 'scale_X': 'mm11'}, 'scale_y': 'std', 'lr': 0.5}
+params = {'layers': (64, 64, 64), 'morse_transform': {'morse': True, 'morse_alpha': 1.0}, 'pip': {'degree_reduction': True, 'pip': True}, 'scale_X': {'activation': 'tanh', 'scale_X': 'mm11'}, 'scale_y': 'std', 'lr': 1.0}
 
 X, y, Xscaler, yscaler =  nn.preprocess(params, nn.raw_X, nn.raw_y)
-print("Scaler computed.")
+model = torch.load('model.pt')
 
 # How to use 'compute_energy()' function
 # --------------------------------------
@@ -39,9 +39,7 @@ print("Scaler computed.")
 # The returned energy array is a column vector of corresponding energies. Elements can be accessed with E[0,0], E[0,1], E[0,2]
 # NOTE: Sending multiple geometries through at once is much faster than a loop of sending single geometries through.
 
-
 def pes(geom_vectors, cartesian=True):
-    model = torch.load('model.pt')
     g = np.asarray(geom_vectors)
     if cartesian:
         axis = 1
@@ -49,33 +47,21 @@ def pes(geom_vectors, cartesian=True):
             axis = 0
         g = np.apply_along_axis(cart1d_to_distances1d, axis, g)
     newX = nn.transform_new_X(g, params, Xscaler)
-    x = torch.tensor(data=newX, requires_grad=True)
-    model.zero_grad()
-    # x = torch.tensor(data=x)
-    E = model(x.float())
-    v = torch.tensor([[1.0]], dtype=torch.float)
-    E.backward(v)
-    e = nn.inverse_transform_new_y(E.detach(), yscaler)
-    # e = e - (insert min energy here)
-    # e *= 219474.63  ( convert units )
-    return e, x.grad
-
+    x = torch.tensor(data=newX)
+    with torch.no_grad():
+        E = model(x)
+    e = nn.inverse_transform_new_y(E, yscaler)
+    #e = e - (insert min energy here)
+    #e *= 219474.63  ( convert units )
+    return e
 
 def cart1d_to_distances1d(vec):
     vec = vec.reshape(-1,3)
     n = len(vec)
     distance_matrix = np.zeros((n,n))
-    for i, j in combinations(range(len(vec)),2):
+    for i,j in combinations(range(len(vec)),2):
         R = np.linalg.norm(vec[i]-vec[j])
-        distance_matrix[j, i] = R
+        distance_matrix[j,i] = R
     distance_vector = distance_matrix[np.tril_indices(len(distance_matrix),-1)]
     return distance_vector
 
-
-# Changed to new branch luoshu_implementation
-if __name__ == "__main__":
-    print("Start the calculation of energy...")
-    # Based on the data in PES_data_new 17
-    input_value = (0, 0, 1.1125, 0, 0.85, -0.12, 0, 0, 0)
-    result, grad = pes(geom_vectors=input_value, cartesian=True)
-    print(grad)

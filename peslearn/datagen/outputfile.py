@@ -43,7 +43,7 @@ class OutputFile(object):
         energy_regex : str
             A string containing the regex code for capturing an energy floating point number.
                 e.g. "\s*FINAL ELECTRONIC ENERGY \(Eh\):\s+(-\d+\.\d+)"
-
+ff
         Returns
         -------
         last_energy : float

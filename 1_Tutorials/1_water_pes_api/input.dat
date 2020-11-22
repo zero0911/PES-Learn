@@ -7,10 +7,8 @@ r2 = [0.85,1.20, 5]
 a2 = [90.0,120.0, 5]
 
 remove_redundancy = true
-input_name = real_input.dat
-pes_name = "PES_new.dat"
-pes_dir_name = "PES_data_new"
+input_name = "real_input.dat"
 
-mode = generate
+mode = "learn"
 use_pips = "true"
 ml_model = "nn"
