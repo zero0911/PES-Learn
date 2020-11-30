@@ -1,0 +1,1 @@
+{'layers': (128, 128, 128), 'morse_transform': {'morse': True, 'morse_alpha': 1.4000000000000001}, 'pip': {'degree_reduction': False, 'pip': True}, 'scale_X': {'activation': 'tanh', 'scale_X': 'mm11'}, 'scale_y': 'std', 'lr': 0.8}

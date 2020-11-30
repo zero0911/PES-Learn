@@ -34,7 +34,7 @@ class NeuralNetwork(Model):
                 raise Exception("Error: User-specified training set size and validation set size exceeds the size of the dataset.")
         else:
             self.nvalid = round((self.n_datapoints - self.ntrain)  / 2)
-
+        
         if self.pip:
             if molecule_type:
                 path = os.path.join(package_directory, "lib", molecule_type, "output")
@@ -267,7 +267,7 @@ class NeuralNetwork(Model):
             optimizer = torch.optim.Adam(mdata, lr=rate)
         return optimizer
 
-    def build_model(self, params, maxit=1000, val_freq=10, es_patience=2, opt='adam', tol=1.0,  decay=False, verbose=False, precision=32, return_model=False):
+    def build_model(self, params, maxit=1000, val_freq=10, es_patience=2, opt='lbfgs', tol=1.0,  decay=False, verbose=False, precision=32, return_model=False):
         """
         Parameters
         ----------
@@ -300,6 +300,8 @@ class NeuralNetwork(Model):
             activ = nn.Tanh() 
         if activation == 'sigmoid':
             activ = nn.Sigmoid()
+        if activation == "relu":
+            activ = nn.ReLU()
         
         inp_dim = self.inp_dim
         l = params['layers']
@@ -323,7 +325,6 @@ class NeuralNetwork(Model):
             lr = 0.5
         else:
             lr = 0.1
-        parameters_test = model.parameters()
         optimizer = self.get_optimizer(opt, model.parameters(), lr=lr)
         # Define update variables for early stopping, decay, gradient explosion handling
         prev_loss = 1.0
