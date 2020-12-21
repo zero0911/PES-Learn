@@ -53,7 +53,6 @@ def pes(geom_vectors, cartesian=True):
         if len(g.shape) < 2:
             axis = 0
         g = np.apply_along_axis(cart1d_to_distances1d, axis, g)
-    # TODO: Substitute the transform with the computable code
     newX = nn.transform_new_X(g, params, Xscaler)
     morse_grad = transform_x_buffer(g, params)
     morse_grad_array = np.array(morse_grad)

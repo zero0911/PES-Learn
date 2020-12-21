@@ -13,51 +13,25 @@ params = {'layers': (128, 128, 128), 'morse_transform': {'morse': True, 'morse_a
 X, y, Xscaler, yscaler = nn.preprocess(params, nn.raw_X, nn.raw_y)
 model = torch.load('model.pt')
 
+# Outline of backpropagation algorithm:
+# 1. Implementation of different components of backpropagation
+# 2. Testing of the components
+# 3. Testing of the data transfer between components
 
-# How to use 'compute_energy()' function
-# --------------------------------------
-# E = compute_energy(geom_vectors, cartesian=bool)
-# 'geom_vectors' is either: 
-#  1. A list or tuple of coordinates for a single geometry. 
-#  2. A column vector of one or more sets of 1d coordinate vectors as a list of lists or 2D NumPy array:
-# [[ coord1, coord2, ..., coordn],
-#  [ coord1, coord2, ..., coordn],
-#      :       :             :  ], 
-#  [ coord1, coord2, ..., coordn]]
-# In all cases, coordinates should be supplied in the exact same format and exact same order the model was trained on.
-# If the coordinates format used to train the model was interatomic distances, each set of coordinates should be a 1d array of either interatom distances or cartesian coordinates. 
-# If cartesian coordinates are supplied, cartesian=True should be passed and it will convert them to interatomic distances. 
-# The order of coordinates matters. If PES-Learn datasets were used they should be in standard order;
-# i.e. cartesians should be supplied in the order x,y,z of most common atoms first, with alphabetical tiebreaker. 
-# e.g., C2H3O2 --> H1x H1y H1z H2x H2y H2z H3x H3y H3z C1x C1y C1z C2x C2y C2z O1x O1y O1z O2x O2y O2z
-# and interatom distances should be the row-wise order of the lower triangle of the interatom distance matrix, with standard order atom axes:
-#    H  H  H  C  C  O  O 
-# H 
-# H  1
-# H  2  3
-# C  4  5  6 
-# C  7  8  9  10 
-# O  11 12 13 14 15
-# O  16 17 18 19 20 21
+# Check procedure for backpropagation algorithm:
+# 1. The conversion of coordinate (from Cartesian to distance): implemented and checked
+# 2. The Morse transform: implemented and checked
+# 3. The fundamental -> invariant: unimplemented and unchecked
+# 4. The scaling of X: implemented and checked
+# 5. The gradient of NN: implemented and unchecked
+# 6. The scaling of Y: implemented and checked
+# 7. Joint: unchecked
 
-# The returned energy array is a column vector of corresponding energies.
-# Elements can be accessed with E[0,0], E[0,1], E[0,2]
-# NOTE: Sending multiple geometries through at once is much faster than a loop of sending single geometries through.
 
 # TODO: Last step of implementation: do the backpropagation of pip (fundamental to invariant)
 def pes(geom_vectors, cartesian=True):
     model = torch.load('model.pt')
     g = np.asarray(geom_vectors)
-    gradients_wrt_cartesian_coordinates = np.zeros((3, 3), dtype=float)
-    g_test_plus = g + np.array([0, 1e-2, 0, 0, 0, 0, 0, 0, 0])
-    g_test_minus = g - np.array([0, 1e-2, 0, 0, 0, 0, 0, 0, 0])
-    g_test_plus_new = np.expand_dims(g_test_plus, axis=0)
-    g_test_minus_new = np.expand_dims(g_test_minus, axis=0)
-    internal_coordinate_plus = np.apply_along_axis(cart1d_to_distances1d, 1, g_test_plus_new)
-    internal_coordinate_minus = np.apply_along_axis(cart1d_to_distances1d, 1, g_test_minus_new)
-    g_test = (internal_coordinate_plus[0] - internal_coordinate_minus[0])/np.array([1e-2, 1e-2, 1e-2])
-    internal_coordinate_real = np.apply_along_axis(cart1d_to_distances1d, 0, g)
-    print("Numerical gradient for Cartesian conversion: ", g_test)
     if cartesian:
         axis = 1
         if len(g.shape) < 2:
@@ -127,23 +101,14 @@ def cart1d_to_distances1d(vec):
 # computation.
 # TODO: verify the result of gradient computation in Cartesian coordinates conversion.
 def cart_conversion_gradient(coordinates):
-    coordinates_tensor = torch.tensor(coordinates, requires_grad=True)
-    coordinate_reorganized = torch.reshape(coordinates_tensor, (len(coordinates_tensor)//3, 3))
-    # The internal coordinates are saved in this matrix.
-    # internal_coordinates_matrix = torch.zeros((len(coordinate_reorganized), len(coordinate_reorganized)))
-    # for i, j in combinations(range(len(coordinate_reorganized)), 2):
-        # norm = torch.norm(coordinate_reorganized[i] - coordinate_reorganized[j])
-        # internal_coordinates_matrix[j, i] = norm
-    # internal_coordinates_vector = internal_coordinates_matrix[np.tril_indices(len(internal_coordinates_matrix), -1)]
     gradients = []
     for i in range(len(coordinates)//3):
-        # internal_coordinates_vector[0].backward(retain_graph=True)
-        # gradients.append(list(np.array(coordinates_tensor.grad)))
         gradients.append(get_gradient_from_cart_conversion(coordinates, i))
     gradient_matrix = np.array(gradients)
     return gradient_matrix.transpose()
 
 
+# A helper function of
 def get_gradient_from_cart_conversion(coordinates_file, target_axis):
     coordinates_vector = torch.tensor(coordinates_file, requires_grad=True)
     coordinates_matrix = torch.reshape(coordinates_vector, (len(coordinates_vector)//3, 3))
