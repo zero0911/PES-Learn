@@ -12,12 +12,13 @@ def general_scaler(scale_type, data):
         scaler = StandardScaler()
         new_data = scaler.fit_transform(data)
     if scale_type == 'mm01':
-        scaler = MinMaxScaler(feature_range=(0,1))
+        scaler = MinMaxScaler(feature_range=(0, 1))
         new_data = scaler.fit_transform(data)
     if scale_type == 'mm11':
-        scaler = MinMaxScaler(feature_range=(-1,1))
+        scaler = MinMaxScaler(feature_range=(-1, 1))
         new_data = scaler.fit_transform(data)
     return new_data, scaler
+
 
 def morse(raw_X, alpha=1.00):
     """
@@ -26,6 +27,7 @@ def morse(raw_X, alpha=1.00):
     Assumes units of Angstroms 
     """
     return np.exp(-raw_X / alpha)
+
 
 def interatomics_to_fundinvar(raw_X, fi_path):
     """
@@ -48,18 +50,18 @@ def interatomics_to_fundinvar(raw_X, fi_path):
         data = f.read()
         data = re.sub('\^', '**', data)
         #  convert subscripts of bonds to 0 indexing
-        for i in range(1, nbonds+1):
-            data = re.sub('x{}(\D)'.format(str(i)), 'x{}\\1'.format(i-1), data)
+        for i in range(1, nbonds + 1):
+            data = re.sub('x{}(\D)'.format(str(i)), 'x{}\\1'.format(i - 1), data)
 
-        polys = re.findall("\]=(.+)",data)
+        polys = re.findall("\]=(.+)", data)
 
     # create a new_X matrix that is the shape of number geoms, number of Fundamental Invariants
-    new_X = np.zeros((raw_X.shape[0],len(polys)))
-    for i, p in enumerate(polys):    # evaluate each FI 
+    new_X = np.zeros((raw_X.shape[0], len(polys)))
+    for i, p in enumerate(polys):  # evaluate each FI
         # convert the FI to a python expression of raw_X, e.g. x1 + x2 becomes raw_X[:,1] + raw_X[:,2]
         eval_string = re.sub(r"(x)(\d+)", r"raw_X[:,\2]", p)
         # evaluate that column's FI from columns of raw_X
-        new_X[:,i] = eval(eval_string)
+        new_X[:, i] = eval(eval_string)
 
     # find degree of each FI
     degrees = []
@@ -73,13 +75,15 @@ def interatomics_to_fundinvar(raw_X, fi_path):
 
     return new_X, degrees
 
+
 def degree_reduce(raw_X, degrees):
     """
     Take every fundamental invariant f and raise to f^(1/m) where m is degree of f
     """
     for i, degree in enumerate(degrees):
-        raw_X[:,i] = np.power(raw_X[:,i], 1/degree)
+        raw_X[:, i] = np.power(raw_X[:, i], 1 / degree)
     return raw_X
+
 
 def sort_architectures(layers, inp_dim):
     """
@@ -103,8 +107,3 @@ def sort_architectures(layers, inp_dim):
     layers = np.asarray(layers)
     layers = layers[sorted_indices].tolist()
     return layers
-
-
-
-
-

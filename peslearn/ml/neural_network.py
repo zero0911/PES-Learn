@@ -8,33 +8,36 @@ import re
 import copy
 
 from .model import Model
-from .data_sampler import DataSampler 
+from .data_sampler import DataSampler
 from ..constants import hartree2cm, package_directory, nn_convenience_function
 from .preprocessing_helper import morse, interatomics_to_fundinvar, degree_reduce, general_scaler
 from ..utils.printing_helper import hyperopt_complete
-from sklearn.model_selection import train_test_split   
+from sklearn.model_selection import train_test_split
 from hyperopt import fmin, tpe, hp, STATUS_OK, STATUS_FAIL, Trials, space_eval
 from .preprocessing_helper import sort_architectures
 
-
 torch.set_printoptions(precision=15)
+
 
 class NeuralNetwork(Model):
     """
     Constructs a Neural Network Model using PyTorch
     """
-    def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None, valid_path=None):
+
+    def __init__(self, dataset_path, input_obj, molecule_type=None, molecule=None, train_path=None, test_path=None,
+                 valid_path=None):
         super().__init__(dataset_path, input_obj, molecule_type, molecule, train_path, test_path, valid_path)
         self.trial_layers = self.input_obj.keywords['nas_trial_layers']
         self.set_default_hyperparameters()
-        
+
         if self.input_obj.keywords['validation_points']:
             self.nvalid = self.input_obj.keywords['validation_points']
             if (self.nvalid + self.ntrain + 1) > self.n_datapoints:
-                raise Exception("Error: User-specified training set size and validation set size exceeds the size of the dataset.")
+                raise Exception(
+                    "Error: User-specified training set size and validation set size exceeds the size of the dataset.")
         else:
-            self.nvalid = round((self.n_datapoints - self.ntrain)  / 2)
-        
+            self.nvalid = round((self.n_datapoints - self.ntrain) / 2)
+
         if self.pip:
             if molecule_type:
                 path = os.path.join(package_directory, "lib", molecule_type, "output")
@@ -57,27 +60,28 @@ class NeuralNetwork(Model):
         """
         if nn_search_space == 1:
             self.hyperparameter_space = {
-            'scale_X': hp.choice('scale_X',
-                     [
-                     {'scale_X': 'mm11',
-                          'activation': hp.choice('activ2', ['tanh'])},
-                     {'scale_X': 'std',
-                          'activation': hp.choice('activ3', ['tanh'])},
-                     ]),
-            'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11']),}
+                'scale_X': hp.choice('scale_X',
+                                     [
+                                         {'scale_X': 'mm11',
+                                          'activation': hp.choice('activ2', ['tanh'])},
+                                         {'scale_X': 'std',
+                                          'activation': hp.choice('activ3', ['tanh'])}
+                                     ]),
+                'scale_y': hp.choice('scale_y', ['std', 'mm01', 'mm11']), }
         # TODO make more expansive search spaces, benchmark them, expose them as input options
-        #elif nn_search_space == 2:
-        #elif nn_search_space == 3:
+        # elif nn_search_space == 2:
+        # elif nn_search_space == 3:
         else:
             raise Exception("Invalid search space specification")
 
         # Standard geometry transformations, always use these.
         if self.input_obj.keywords['pes_format'] == 'interatomics':
-            self.set_hyperparameter('morse_transform', hp.choice('morse_transform',[{'morse': True,'morse_alpha': hp.quniform('morse_alpha', 1, 2, 0.1)},{'morse': False}]))
+            self.set_hyperparameter('morse_transform', hp.choice('morse_transform', [
+                {'morse': True, 'morse_alpha': hp.quniform('morse_alpha', 1, 2, 0.1)}, {'morse': False}]))
         else:
-            self.set_hyperparameter('morse_transform', hp.choice('morse_transform',[{'morse': False}]))
+            self.set_hyperparameter('morse_transform', hp.choice('morse_transform', [{'morse': False}]))
         if self.pip:
-            val =  hp.choice('pip',[{'pip': True,'degree_reduction': hp.choice('degree_reduction', [True,False])}])
+            val = hp.choice('pip', [{'pip': True, 'degree_reduction': hp.choice('degree_reduction', [True, False])}])
             self.set_hyperparameter('pip', val)
         else:
             self.set_hyperparameter('pip', hp.choice('pip', [{'pip': False}]))
@@ -85,11 +89,13 @@ class NeuralNetwork(Model):
     def optimize_model(self):
         if not self.input_obj.keywords['validation_points']:
             print("Number of validation points not specified. Splitting test set in half --> 50% test, 50% validation")
-        print("Training with {} points. Validating with {} points. Full dataset contains {} points.".format(self.ntrain, self.nvalid, self.n_datapoints))
+        print("Training with {} points. Validating with {} points. Full dataset contains {} points.".format(self.ntrain,
+                                                                                                            self.nvalid,
+                                                                                                            self.n_datapoints))
         print("Using {} training set point sampling.".format(self.sampler))
         print("Errors are root-mean-square error in wavenumbers (cm-1)")
         print("\nPerforming neural architecture search...\n")
-        best_hlayers = self.neural_architecture_search(trial_layers = self.trial_layers)
+        best_hlayers = self.neural_architecture_search(trial_layers=self.trial_layers)
         print("\nNeural architecture search complete. Best hidden layer structures: {}\n".format(best_hlayers))
         print("Beginning hyperparameter optimization...")
         print("Trying {} combinations of hyperparameters".format(self.hp_maxit))
@@ -103,33 +109,38 @@ class NeuralNetwork(Model):
         best = fmin(self.hyperopt_model,
                     space=self.hyperparameter_space,
                     algo=tpe.suggest,
-                    max_evals=self.hp_maxit*2,
-                    rstate=rstate, 
+                    max_evals=self.hp_maxit * 2,
+                    rstate=rstate,
                     show_progressbar=False,
                     trials=self.hyperopt_trials)
         hyperopt_complete()
         print("Best performing hyperparameters are:")
         final = space_eval(self.hyperparameter_space, best)
         print(str(sorted(final.items())))
-        self.optimal_hyperparameters  = dict(final)
+        self.optimal_hyperparameters = dict(final)
         print("Optimizing learning rate...")
-        
+
         if self.input_obj.keywords['nn_precision'] == 64:
             precision = 64
         elif self.input_obj.keywords['nn_precision'] == 32:
             precision = 32
-        else: 
+        else:
             precision = 32
         learning_rates = [1.0, 0.8, 0.6, 0.5, 0.4, 0.2]
         val_errors = []
         for i in learning_rates:
             self.optimal_hyperparameters['lr'] = i
-            test_error, val_error = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=10, es_patience=5, opt='lbfgs', tol=0.5,  decay=False, verbose=False, precision=precision)
+            test_error, val_error = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=10,
+                                                     es_patience=30, opt='lbfgs', tol=0.5, decay=False, verbose=False,
+                                                     precision=precision)
             val_errors.append(val_error)
         best_lr = learning_rates[np.argsort(val_errors)[0]]
         self.optimal_hyperparameters['lr'] = best_lr
         print("Fine-tuning final model...")
-        model, test_error, val_error, full_error = self.build_model(self.optimal_hyperparameters, maxit=5000, val_freq=1, es_patience=100, opt='lbfgs', tol=0.1,  decay=True, verbose=True,precision=precision,return_model=True)
+        model, test_error, val_error, full_error = self.build_model(self.optimal_hyperparameters, maxit=5000,
+                                                                    val_freq=1, es_patience=200, opt='lbfgs', tol=0.1,
+                                                                    decay=True, verbose=True, precision=precision,
+                                                                    return_model=True)
         performance = [test_error, val_error, full_error]
         print("Model optimization complete. Saving final model...")
         self.save_model(self.optimal_hyperparameters, model, performance)
@@ -144,27 +155,31 @@ class NeuralNetwork(Model):
             A list of tuples describing the number of nodes in each hidden layer. Example: a 3-20-20-1 NN would be a tuple (20,20).
         """
         if trial_layers == None:
-            tmp_layers = [(16,), (16,16), (16,16,16), (16,16,16,16),
-                          (32,), (32,32), (32,32,32), (32,32,32,32),
-                          (64,), (64,64), (64,64,64), (64,64,64,64),
-                          (128,), (128,128), (128,128,128),
-                          (256,), (256,256)] 
+            tmp_layers = [(16,), (16, 16), (16, 16, 16), (16, 16, 16, 16), (16, 16, 16, 16, 16),
+                          (32,), (32, 32), (32, 32, 32), (32, 32, 32, 32), (32, 32, 32, 32, 32),
+                          (64,), (64, 64), (64, 64, 64), (64, 64, 64, 64), (64, 64, 64, 64, 64),
+                          (128,), (128, 128), (128, 128, 128), (128, 128, 128, 128), (128, 128, 128, 128, 128),
+                          (256,), (256, 256), (256, 256, 256), (256, 256, 256, 256), (256, 256, 256, 256, 256),
+                          (512,), (512, 512), (512, 512, 512), (512, 512, 512, 512), (512, 512, 512, 512, 512),
+                          (16, 32, 64, 128, 256), (256, 128, 64, 32, 16), (64, 128, 256, 128, 64)]
         else:
             tmp_layers = trial_layers
         self.nas_layers = sort_architectures(tmp_layers, self.inp_dim)
         self.nas_size = len(self.nas_layers)
         # force reliable set of hyperparameters
-        params = {'morse_transform': {'morse':False},'scale_X':{'scale_X':'std', 'activation':'tanh'}, 'scale_y':'std'}
+        params = {'morse_transform': {'morse': False}, 'scale_X': {'scale_X': 'std', 'activation': 'tanh'},
+                  'scale_y': 'std'}
         if self.pip:
-            params['pip'] = {'degree_reduction': False, 'pip': True} 
+            params['pip'] = {'degree_reduction': False, 'pip': True}
         else:
-            params['pip'] = {'degree_reduction': False, 'pip': False} 
+            params['pip'] = {'degree_reduction': False, 'pip': False}
         test = []
         validation = []
         for i in self.nas_layers:
             params['layers'] = i
             print("Hidden layer structure: ", i)
-            testerror, valid = self.build_model(params, maxit=300, val_freq=10, es_patience=2, opt='lbfgs', tol=1.0,  decay=False, verbose=False)
+            testerror, valid = self.build_model(params, maxit=300, val_freq=10, es_patience=2, opt='lbfgs', tol=1.0,
+                                                decay=False, verbose=False)
             test.append(testerror)
             validation.append(valid)
         # save best architectures for hyperparameter optimization
@@ -202,24 +217,25 @@ class NeuralNetwork(Model):
         else:
             self.Xtr = self.X[self.train_indices]
             self.ytr = self.y[self.train_indices]
-            #TODO: this is splitting validation data in the same way at every model build, not necessary.
-            self.valid_indices, self.new_test_indices = train_test_split(self.test_indices, train_size = validation_size, random_state=42)
+            # TODO: this is splitting validation data in the same way at every model build, not necessary.
+            self.valid_indices, self.new_test_indices = train_test_split(self.test_indices, train_size=validation_size,
+                                                                         random_state=42)
             if validation_size:
-                self.Xvalid = self.X[self.valid_indices]             
+                self.Xvalid = self.X[self.valid_indices]
                 self.yvalid = self.y[self.valid_indices]
                 self.Xtest = self.X[self.new_test_indices]
                 self.ytest = self.y[self.new_test_indices]
 
-            #self.Xtmp = self.X[self.test_indices]
-            #self.ytmp = self.y[self.test_indices]
-            #if validation_size:
+            # self.Xtmp = self.X[self.test_indices]
+            # self.ytmp = self.y[self.test_indices]
+            # if validation_size:
             #    self.Xvalid, self.Xtest, self.yvalid, self.ytest =  train_test_split(self.Xtmp,
             #                                                                         self.ytmp, 
             #                                                       train_size = validation_size, 
             #                                                                    random_state=42)
 
             ## temporary implementation: structure based validation set sample
-            #if validation_size:
+            # if validation_size:
             #    data = np.hstack((self.Xtmp, self.ytmp))
             #    col = [str(i) for i in range(data.shape[1])]
             #    col[-1] = 'E'
@@ -237,37 +253,39 @@ class NeuralNetwork(Model):
 
         # convert to Torch Tensors
         if precision == 32:
-            self.Xtr    = torch.tensor(self.Xtr,   dtype=torch.float32)
-            self.ytr    = torch.tensor(self.ytr,   dtype=torch.float32)
-            self.Xtest  = torch.tensor(self.Xtest, dtype=torch.float32)
-            self.ytest  = torch.tensor(self.ytest, dtype=torch.float32)
-            self.Xvalid = torch.tensor(self.Xvalid,dtype=torch.float32)
-            self.yvalid = torch.tensor(self.yvalid,dtype=torch.float32)
-            self.X = torch.tensor(self.X,dtype=torch.float32)
-            self.y = torch.tensor(self.y,dtype=torch.float32)
+            self.Xtr = torch.tensor(self.Xtr, dtype=torch.float32)
+            self.ytr = torch.tensor(self.ytr, dtype=torch.float32)
+            self.Xtest = torch.tensor(self.Xtest, dtype=torch.float32)
+            self.ytest = torch.tensor(self.ytest, dtype=torch.float32)
+            self.Xvalid = torch.tensor(self.Xvalid, dtype=torch.float32)
+            self.yvalid = torch.tensor(self.yvalid, dtype=torch.float32)
+            self.X = torch.tensor(self.X, dtype=torch.float32)
+            self.y = torch.tensor(self.y, dtype=torch.float32)
         elif precision == 64:
-            self.Xtr    = torch.tensor(self.Xtr,   dtype=torch.float64)
-            self.ytr    = torch.tensor(self.ytr,   dtype=torch.float64)
-            self.Xtest  = torch.tensor(self.Xtest, dtype=torch.float64)
-            self.ytest  = torch.tensor(self.ytest, dtype=torch.float64)
-            self.Xvalid = torch.tensor(self.Xvalid,dtype=torch.float64)
-            self.yvalid = torch.tensor(self.yvalid,dtype=torch.float64)
-            self.X = torch.tensor(self.X,dtype=torch.float64)
-            self.y = torch.tensor(self.y,dtype=torch.float64)
+            self.Xtr = torch.tensor(self.Xtr, dtype=torch.float64)
+            self.ytr = torch.tensor(self.ytr, dtype=torch.float64)
+            self.Xtest = torch.tensor(self.Xtest, dtype=torch.float64)
+            self.ytest = torch.tensor(self.ytest, dtype=torch.float64)
+            self.Xvalid = torch.tensor(self.Xvalid, dtype=torch.float64)
+            self.yvalid = torch.tensor(self.yvalid, dtype=torch.float64)
+            self.X = torch.tensor(self.X, dtype=torch.float64)
+            self.y = torch.tensor(self.y, dtype=torch.float64)
         else:
             raise Exception("Invalid option for 'precision'")
 
-    def get_optimizer(self, opt_type, mdata, lr=0.1): 
+    def get_optimizer(self, opt_type, mdata, lr=0.1):
         rate = lr
         if opt_type == 'lbfgs':
-            #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-5, tolerance_change=1e-9, history_size=100) # Defaults
-            #optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=100, max_eval=None, tolerance_grad=1e-10, tolerance_change=1e-14, history_size=200)
-            optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-8, tolerance_change=1e-12, history_size=100)
+            # optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-5, tolerance_change=1e-9, history_size=100) # Defaults
+            # optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=100, max_eval=None, tolerance_grad=1e-10, tolerance_change=1e-14, history_size=200)
+            optimizer = torch.optim.LBFGS(mdata, lr=rate, max_iter=20, max_eval=None, tolerance_grad=1e-8,
+                                          tolerance_change=1e-12, history_size=100)
         if opt_type == 'adam':
             optimizer = torch.optim.Adam(mdata, lr=rate)
         return optimizer
 
-    def build_model(self, params, maxit=1000, val_freq=10, es_patience=2, opt='lbfgs', tol=1.0,  decay=False, verbose=False, precision=32, return_model=False):
+    def build_model(self, params, maxit=1000, val_freq=10, es_patience=2, opt='lbfgs', tol=1.0, decay=False,
+                    verbose=False, precision=32, return_model=False):
         """
         Parameters
         ----------
@@ -288,34 +306,35 @@ class NeuralNetwork(Model):
             If true, print training progress after every validation  
         """
         print("Hyperparameters: ", params)
-        self.split_train_test(params, validation_size=self.nvalid, precision=precision)  # split data, according to scaling hp's
-        scale = params['scale_y']                                                        # Find descaling factor to convert loss to original energy units
+        self.split_train_test(params, validation_size=self.nvalid,
+                              precision=precision)  # split data, according to scaling hp's
+        scale = params['scale_y']  # Find descaling factor to convert loss to original energy units
         if scale == 'std':
             loss_descaler = self.yscaler.var_[0]
         if scale.startswith('mm'):
-            loss_descaler = (1/self.yscaler.scale_[0]**2)
+            loss_descaler = (1 / self.yscaler.scale_[0] ** 2)
 
         activation = params['scale_X']['activation']
         if activation == 'tanh':
-            activ = nn.Tanh() 
+            activ = nn.Tanh()
         if activation == 'sigmoid':
             activ = nn.Sigmoid()
         if activation == "relu":
             activ = nn.ReLU()
-        
+
         inp_dim = self.inp_dim
         l = params['layers']
         torch.manual_seed(0)
         depth = len(l)
         structure = OrderedDict([('input', nn.Linear(inp_dim, l[0])),
-                                 ('activ_in' , activ)])
+                                 ('activ_in', activ)])
         model = nn.Sequential(structure)
-        for i in range(depth-1):
-            model.add_module('layer' + str(i), nn.Linear(l[i], l[i+1]))
+        for i in range(depth - 1):
+            model.add_module('layer' + str(i), nn.Linear(l[i], l[i + 1]))
             model.add_module('activ' + str(i), activ)
-        model.add_module('output', nn.Linear(l[depth-1], 1))
-        if precision == 64: # cast model to proper precision
-            model = model.double() 
+        model.add_module('output', nn.Linear(l[depth - 1], 1))
+        if precision == 64:  # cast model to proper precision
+            model = model.double()
 
         metric = torch.nn.MSELoss()
         # Define optimizer
@@ -334,28 +353,30 @@ class NeuralNetwork(Model):
         decay_attempts = 0
         prev_best = None
         decay_start = False
-    
-        for epoch in range(1,maxit):
+
+        for epoch in range(1, maxit):
             def closure():
                 optimizer.zero_grad()
                 y_pred = model(self.Xtr)
-                loss = torch.sqrt(metric(y_pred, self.ytr)) # passing RMSE instead of MSE improves precision IMMENSELY
+                loss = torch.sqrt(metric(y_pred, self.ytr))  # passing RMSE instead of MSE improves precision IMMENSELY
                 loss.backward()
                 return loss
+
             optimizer.step(closure)
             # validate
             if epoch % val_freq == 0:
                 with torch.no_grad():
-                    tmp_pred = model(self.Xvalid) 
+                    tmp_pred = model(self.Xvalid)
                     tmp_loss = metric(tmp_pred, self.yvalid)
-                    val_error_rmse = np.sqrt(tmp_loss.item() * loss_descaler) * hartree2cm # loss_descaler converts MSE in scaled data domain to MSE in unscaled data domain
+                    val_error_rmse = np.sqrt(
+                        tmp_loss.item() * loss_descaler) * hartree2cm  # loss_descaler converts MSE in scaled data domain to MSE in unscaled data domain
                     if best_val_error:
                         if val_error_rmse < best_val_error:
                             prev_best = best_val_error * 1.0
-                            best_val_error = val_error_rmse * 1.0 
+                            best_val_error = val_error_rmse * 1.0
                     else:
                         record = True
-                        best_val_error = val_error_rmse * 1.0 
+                        best_val_error = val_error_rmse * 1.0
                         prev_best = best_val_error
                     if verbose:
                         print("Epoch {} Validation RMSE (cm-1): {:5.3f}".format(epoch, val_error_rmse))
@@ -365,10 +386,10 @@ class NeuralNetwork(Model):
                     # Early Stopping 
                     if epoch > 5:
                         # if current validation error is not the best (current - best > 0) and is within tol of previous error, the model is stagnant. 
-                        if ((val_error_rmse - prev_loss) < tol) and (val_error_rmse - best_val_error) > 0.0: 
+                        if ((val_error_rmse - prev_loss) < tol) and (val_error_rmse - best_val_error) > 0.0:
                             es_tracker += 1
                         # else if: current validation error is not the best (current - best > 0) and is greater than the best by tol, the model is overfitting. Bad epoch.
-                        elif ((val_error_rmse - best_val_error) > tol) and (val_error_rmse - best_val_error) > 0.0: 
+                        elif ((val_error_rmse - best_val_error) > tol) and (val_error_rmse - best_val_error) > 0.0:
                             es_tracker += 1
                         # else if: if the current validation error is a new record, but not significant, the model is stagnant
                         elif (prev_best - best_val_error) < 0.001:
@@ -376,7 +397,7 @@ class NeuralNetwork(Model):
                         # else: model set a new record validation error. Reset early stopping tracker
                         else:
                             es_tracker = 0
-                        #TODO this framework does not detect oscillatory behavior about 'tol', though this has not been observed to occur in any case 
+                        # TODO this framework does not detect oscillatory behavior about 'tol', though this has not been observed to occur in any case
                         # Check status of early stopping tracker. First try decaying to see if stagnation can be resolved, if not then terminate training
                         if es_tracker > es_patience:
                             if decay:  # if decay is set to true, if early stopping criteria is triggered, begin LR scheduler and go back to previous model state and attempt LR decay.
@@ -384,17 +405,22 @@ class NeuralNetwork(Model):
                                     decay_attempts += 1
                                     es_tracker = 0
                                     if verbose:
-                                        print("Performance plateau detected. Reverting model state and decaying learning rate.")
+                                        print(
+                                            "Performance plateau detected. Reverting model state and decaying learning rate.")
                                     decay_start = True
                                     thresh = (0.1 / np.sqrt(loss_descaler)) / hartree2cm  # threshold is 0.1 wavenumbers
-                                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9, threshold=thresh, threshold_mode='abs', min_lr=0.05, cooldown=2, patience=10, verbose=verbose)
+                                    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.9,
+                                                                                           threshold=thresh,
+                                                                                           threshold_mode='abs',
+                                                                                           min_lr=0.05, cooldown=2,
+                                                                                           patience=10, verbose=verbose)
                                     model.load_state_dict(saved_model_state_dict)
-                                    saved_optimizer_state_dict['param_groups'][0]['lr'] = lr*0.9
+                                    saved_optimizer_state_dict['param_groups'][0]['lr'] = lr * 0.9
                                     optimizer.load_state_dict(saved_optimizer_state_dict)
                                     # Since learning rate is decayed, override tolerance, patience, validation frequency for high-precision
-                                    #tol = 0.05
-                                    #es_patience = 100
-                                    #val_freq = 1
+                                    # tol = 0.05
+                                    # es_patience = 100
+                                    # val_freq = 1
                                     continue
                                 else:
                                     prev_loss = val_error_rmse * 1.0
@@ -409,23 +435,25 @@ class NeuralNetwork(Model):
 
                     # Handle exploding gradients 
                     if epoch > 10:
-                        if (val_error_rmse > prev_loss*10): # detect large increases in loss
-                            if epoch > 60: # distinguish between exploding gradients at near converged models and early on exploding grads
+                        if (val_error_rmse > prev_loss * 10):  # detect large increases in loss
+                            if epoch > 60:  # distinguish between exploding gradients at near converged models and early on exploding grads
                                 if verbose:
-                                    print("Exploding gradient detected. Resuming previous model state and decaying learning rate")
+                                    print(
+                                        "Exploding gradient detected. Resuming previous model state and decaying learning rate")
                                 model.load_state_dict(saved_model_state_dict)
-                                saved_optimizer_state_dict['param_groups'][0]['lr'] = lr*0.5
+                                saved_optimizer_state_dict['param_groups'][0]['lr'] = lr * 0.5
                                 optimizer.load_state_dict(saved_optimizer_state_dict)
-                                failures += 1   # if 
-                                if failures > 2: 
+                                failures += 1  # if
+                                if failures > 2:
                                     break
                                 else:
                                     continue
                             else:
                                 break
-                        if val_error_rmse != val_error_rmse: # detect NaN 
+                        if val_error_rmse != val_error_rmse:  # detect NaN
                             break
-                        if ((prev_loss < 1.0) and (precision == 32)):  # if 32 bit precision and model is giving very high accuracy, kill so the accuracy does not go beyond 32 bit precision
+                        if ((prev_loss < 1.0) and (
+                                precision == 32)):  # if 32 bit precision and model is giving very high accuracy, kill so the accuracy does not go beyond 32 bit precision
                             break
                     prev_loss = val_error_rmse * 1.0  # save previous loss to track improvement
 
@@ -433,20 +461,22 @@ class NeuralNetwork(Model):
             if epoch % 50 == 0:
                 saved_model_state_dict = copy.deepcopy(model.state_dict())
                 saved_optimizer_state_dict = copy.deepcopy(optimizer.state_dict())
-            
+
         with torch.no_grad():
             test_pred = model(self.Xtest)
             test_loss = metric(test_pred, self.ytest)
-            test_error_rmse = np.sqrt(test_loss.item() * loss_descaler) * hartree2cm 
-            val_pred = model(self.Xvalid) 
+            test_error_rmse = np.sqrt(test_loss.item() * loss_descaler) * hartree2cm
+            val_pred = model(self.Xvalid)
             val_loss = metric(val_pred, self.yvalid)
             val_error_rmse = np.sqrt(val_loss.item() * loss_descaler) * hartree2cm
             full_pred = model(self.X)
             full_loss = metric(full_pred, self.y)
             full_error_rmse = np.sqrt(full_loss.item() * loss_descaler) * hartree2cm
-        print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f} Full dataset RMSE (cm-1): {:5.2f}".format(test_error_rmse, val_error_rmse, full_error_rmse))
+        print(
+            "Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f} Full dataset RMSE (cm-1): {:5.2f}".format(
+                test_error_rmse, val_error_rmse, full_error_rmse))
         if return_model:
-            return model, test_error_rmse, val_error_rmse, full_error_rmse 
+            return model, test_error_rmse, val_error_rmse, full_error_rmse
         else:
             return test_error_rmse, val_error_rmse
 
@@ -477,7 +507,7 @@ class NeuralNetwork(Model):
         if params['pip']['pip']:
             # find path to fundamental invariants form molecule type AxByCz...
             path = os.path.join(package_directory, "lib", self.molecule_type, "output")
-            raw_X, degrees = interatomics_to_fundinvar(raw_X,path)
+            raw_X, degrees = interatomics_to_fundinvar(raw_X, path)
             if params['pip']['degree_reduction']:
                 raw_X = degree_reduce(raw_X, degrees)
         if params['scale_X']:
@@ -493,32 +523,34 @@ class NeuralNetwork(Model):
         return X, y, Xscaler, yscaler
 
     def save_model(self, params, model, performance):
-        print("Saving ML model data...") 
+        print("Saving ML model data...")
         model_path = "model1_data"
         while os.path.isdir(model_path):
             new = int(re.findall("\d+", model_path)[0]) + 1
-            model_path = re.sub("\d+",str(new), model_path)
+            model_path = re.sub("\d+", str(new), model_path)
         os.mkdir(model_path)
         os.chdir(model_path)
         torch.save(model, 'model.pt')
-        
+
         with open('hyperparameters', 'w') as f:
             print(params, file=f)
 
         test, valid, full = performance
         with open('performance', 'w') as f:
-            print("Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f} Full dataset RMSE (cm-1): {:5.2f}".format(test, valid, full), file=f)
-        
+            print(
+                "Test set RMSE (cm-1): {:5.2f}  Validation set RMSE (cm-1): {:5.2f} Full dataset RMSE (cm-1): {:5.2f}".format(
+                    test, valid, full), file=f)
+
         if self.sampler == 'user_supplied':
-            self.traindata.to_csv('train_set',sep=',',index=False,float_format='%12.12f')
-            self.validdata.to_csv('validation_set',sep=',',index=False,float_format='%12.12f')
+            self.traindata.to_csv('train_set', sep=',', index=False, float_format='%12.12f')
+            self.validdata.to_csv('validation_set', sep=',', index=False, float_format='%12.12f')
             self.testdata.to_csv('test_set', sep=',', index=False, float_format='%12.12f')
         else:
-            self.dataset.iloc[self.train_indices].to_csv('train_set',sep=',',index=False,float_format='%12.12f')
+            self.dataset.iloc[self.train_indices].to_csv('train_set', sep=',', index=False, float_format='%12.12f')
             self.dataset.iloc[self.valid_indices].to_csv('validation_set', sep=',', index=False, float_format='%12.12f')
             self.dataset.iloc[self.new_test_indices].to_csv('test_set', sep=',', index=False, float_format='%12.12f')
-    
-        self.dataset.to_csv('PES.dat', sep=',',index=False,float_format='%12.12f')
+
+        self.dataset.to_csv('PES.dat', sep=',', index=False, float_format='%12.12f')
         with open('compute_energy.py', 'w+') as f:
             print(self.write_convenience_function(), file=f)
         os.chdir("../")
@@ -530,7 +562,7 @@ class NeuralNetwork(Model):
         """
         # ensure X dimension is n x m (n new points, m input variables)
         if len(newX.shape) == 1:
-            newX = np.expand_dims(newX,0)
+            newX = np.expand_dims(newX, 0)
         elif len(newX.shape) > 2:
             raise Exception("Dimensions of input data is incorrect.")
         if params['morse_transform']['morse']:
@@ -538,19 +570,19 @@ class NeuralNetwork(Model):
         if params['pip']['pip']:
             # find path to fundamental invariants for an N atom system with molecule type AxByCz...
             path = os.path.join(package_directory, "lib", self.molecule_type, "output")
-            newX, degrees = interatomics_to_fundinvar(newX,path)
+            newX, degrees = interatomics_to_fundinvar(newX, path)
             if params['pip']['degree_reduction']:
                 newX = degree_reduce(newX, degrees)
         if Xscaler:
             newX = Xscaler.transform(newX)
         return newX
 
-    def transform_new_y(self, newy, yscaler=None):    
+    def transform_new_y(self, newy, yscaler=None):
         if yscaler:
             newy = yscaler.transform(newy)
         return newy
 
-    def inverse_transform_new_y(self, newy, yscaler=None):    
+    def inverse_transform_new_y(self, newy, yscaler=None):
         if yscaler:
             newy = yscaler.inverse_transform(newy)
         return newy
@@ -558,7 +590,8 @@ class NeuralNetwork(Model):
     def write_convenience_function(self):
         string = "from peslearn.ml import NeuralNetwork\nfrom peslearn import InputProcessor\nimport torch\nimport numpy as np\nfrom itertools import combinations\n\n"
         if self.pip:
-            string += "nn = NeuralNetwork('PES.dat', InputProcessor(''), molecule_type='{}')\n".format(self.molecule_type)
+            string += "nn = NeuralNetwork('PES.dat', InputProcessor(''), molecule_type='{}')\n".format(
+                self.molecule_type)
         else:
             string += "nn = NeuralNetwork('PES.dat', InputProcessor(''))\n"
         with open('hyperparameters', 'r') as f:
@@ -568,16 +601,3 @@ class NeuralNetwork(Model):
         string += "model = torch.load('model.pt')\n"
         string += nn_convenience_function
         return string
-
-
-
-
-
-
-
-            
-        
-
-
-
-
