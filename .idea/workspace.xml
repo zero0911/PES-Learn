@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="5e2bfcac-dc5e-4f22-a420-cca286aa7b48" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model17_data/PES.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model17_data/compute_energy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model17_data/hyperparameters" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model17_data/model.pt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model17_data/performance" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model17_data/test_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model17_data/train_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model17_data/validation_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model18_data/PES.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model18_data/compute_energy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model18_data/hyperparameters" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model18_data/model.pt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model18_data/performance" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model18_data/test_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model18_data/train_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model18_data/validation_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data/PES.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data/compute_energy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data/hyperparameters" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data/model.pt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data/performance" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data/read.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data/readresult.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data/test_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data/train_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data/validation_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model20_data/PES.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model20_data/compute_energy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model20_data/hyperparameters" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model20_data/model.pt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model20_data/performance" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model20_data/test_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model20_data/train_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model20_data/validation_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model21_data/PES.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model21_data/compute_energy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model21_data/hyperparameters" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model21_data/model.pt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model21_data/performance" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model21_data/test_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model21_data/train_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model21_data/validation_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model22_data/PES.dat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model22_data/compute_energy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model22_data/hyperparameters" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model22_data/model.pt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model22_data/performance" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model22_data/test_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model22_data/train_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model22_data/validation_set" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model8_data/energyresultnew.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model8_data/fittingfigurenew.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model8_data/getenergy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model8_data/gradientresult.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model8_data/read1.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model8_data/reread.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model8_data/trans.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model8_data/trans.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/communicate/getenergy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/communicate/read1.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/communicate/trans.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model8_data/compute_energy.py" beforeDir="false" afterPath="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model8_data/compute_energy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/peslearn/ml/neural_network.py" beforeDir="false" afterPath="$PROJECT_DIR$/peslearn/ml/neural_network.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/peslearn/ml/preprocessing_helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/peslearn/ml/preprocessing_helper.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1loy3WIL97yOpGyuXctFbiTx3UH" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/1_Tutorials/1_water_pes_api" />
+    <property name="settings.editor.selected.configurable" value="Errors" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/1_Tutorials/1_water_pes_api" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.compute_energy (1)">
+    <configuration name="compute_energy (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="PES-Learn" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model21_data" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model21_data/compute_energy.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="compute_energy (2)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="PES-Learn" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data_modified" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data_modified/compute_energy.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="compute_energy" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="PES-Learn" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data/compute_energy.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.compute_energy (1)" />
+        <item itemvalue="Python.compute_energy" />
+        <item itemvalue="Python.compute_energy (2)" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="5e2bfcac-dc5e-4f22-a420-cca286aa7b48" name="Default Changelist" comment="" />
+      <created>1608277539322</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1608277539322</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model19_data/compute_energy.py</url>
+          <line>48</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/1_Tutorials/1_water_pes_api/model21_data/compute_energy.py</url>
+          <line>142</line>
+          <option name="timeStamp" value="141" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
